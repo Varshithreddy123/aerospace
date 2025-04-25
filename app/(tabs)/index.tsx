@@ -237,7 +237,7 @@ export default function HomePage(): JSX.Element {
             </TouchableOpacity>
           </View>
         </View>
-
+        
         {/* Featured Section */}
         <View style={tw`p-4`}>
           <Text style={[tw`text-lg mb-3`, { fontFamily: "Inter_700Bold" }]}>
