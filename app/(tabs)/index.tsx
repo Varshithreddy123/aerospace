@@ -197,7 +197,6 @@ export default function HomePage(): JSX.Element {
                 {t("greeting")} Ravi Kumar
               </Text>
             </View>
-            {/* <TouchableOpacity> */}
             <TouchableOpacity onPress={() => router.push("/notification")}>
               <MaterialIcons
                 name="notifications-none"
@@ -210,7 +209,6 @@ export default function HomePage(): JSX.Element {
           {/* Location Bar - Updated to use actual location */}
           <TouchableOpacity
             style={tw`absolute top-12 left-0 right-0 p-3 flex-row items-center`}
-            
             onPress={() => router.push("/location")}
           >
             <MaterialIcons name="location-on" size={20} color="white" />
@@ -229,7 +227,7 @@ export default function HomePage(): JSX.Element {
             </Text>
             <TouchableOpacity 
               style={tw`bg-white px-2 py-2 rounded-full`}
-              onPress={() => router.push("/(tabs)/requests")} // Add this line
+              onPress={() => router.push("/(tabs)/providers")}
             >
               <Text style={[tw`text-xs`, { fontFamily: "Inter_600SemiBold" }]}>
                 {t("create_request").toUpperCase()}
@@ -261,7 +259,10 @@ export default function HomePage(): JSX.Element {
               >
                 {t("save_offer")}
               </Text>
-              <TouchableOpacity style={tw`bg-white py-2 rounded items-center`}>
+              <TouchableOpacity 
+                style={tw`bg-white py-2 rounded items-center`}
+                onPress={() => router.push("/(tabs)/providers")}
+              >
                 <Text
                   style={[
                     tw`text-blue-500 text-xs`,
@@ -275,7 +276,7 @@ export default function HomePage(): JSX.Element {
                 style={[
                   tw`text-white text-xs mt-1 text-center`,
                   { fontFamily: "Inter_300Light" },
-                ]}
+                ]}  
               >
                 T&C Apply
               </Text>

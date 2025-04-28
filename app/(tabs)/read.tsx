@@ -28,9 +28,11 @@ const Read = () => {
   // Sample text content that will be "translated"
   const originalContent = "This is the content that will be displayed in the selected language.";
 
-  const filteredLanguages = languages.filter(language => 
+  const filteredLanguages = languages.filter((language) =>
     language.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
+  
 
   const handleLanguageSelect = (language) => {
     setSelectedLanguage(language);
