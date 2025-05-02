@@ -29,7 +29,8 @@ export default function Settings() {
         />
         <SettingItem 
           icon={<Feather name="user-plus" size={24} />} 
-          title="Invite a Friend" 
+          title="Invite a Friend"
+          onPress={() => router.push('/screens/invite')} 
         />
         <SettingItem 
           icon={<Ionicons name="information-circle-outline" size={24} />} 

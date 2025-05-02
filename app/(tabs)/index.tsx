@@ -288,6 +288,7 @@ export default function HomePage(): JSX.Element {
                   tw`text-lg text-white mb-2`,
                   { fontFamily: "Inter_700Bold" },
                 ]}
+                onPress={() => router.push("/screens/invite")}
               >
                 {t("refer_earn")}
               </Text>
@@ -296,6 +297,7 @@ export default function HomePage(): JSX.Element {
                   tw`text-white mb-4`,
                   { fontFamily: "Inter_400Regular" },
                 ]}
+                onPress={() => router.push("/screens/invite")}
               >
                 {t("refer_friends")}
               </Text>
@@ -305,6 +307,7 @@ export default function HomePage(): JSX.Element {
                     tw`text-orange-500 text-xs`,
                     { fontFamily: "Inter_600SemiBold" },
                   ]}
+                  onPress={() => router.push("/screens/invite")}
                 >
                   {t("refer_earn").toUpperCase()}
                 </Text>
@@ -314,6 +317,7 @@ export default function HomePage(): JSX.Element {
                   tw`text-white text-xs mt-1 text-center`,
                   { fontFamily: "Inter_300Light" },
                 ]}
+                onPress={() => router.push("/screens/invite")}
               >
                 T&C Apply
               </Text>

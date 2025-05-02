@@ -1,147 +1,289 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  TouchableOpacity, 
-  Modal, 
-  TextInput,
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Modal,
   ScrollView,
-  SafeAreaView
+  Animated,
+  PanResponder,
+  Dimensions,
+  Platform,
+  Share,
+  Alert,
+  Easing
 } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/Feather';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useTranslation } from 'react-i18next';
+import i18n from "@/i18n/i18n";
+import { useNavigation } from '@react-navigation/native';
 
-const languages = [
-  { id: 'en', name: 'English' },
-  { id: 'hi', name: 'Hindi' },
-  { id: 'fr', name: 'French' },
-  { id: 'de', name: 'German' },
-  { id: 'mr', name: 'Marathi' },
-  { id: 'ru', name: 'Russian' },
+const LANGUAGES = [
+  { code: 'en', label: 'English' },
+  { code: 'hi', label: 'हिंदी' },
+  { code: 'gu', label: 'ગુજરાતી' },
+  { code: 'ka', label: 'ಕನ್ನಡ' },
+  { code: 'ma', label: 'मराठी' },
+  { code: 'pu', label: 'ਪੰਜਾਬੀ' },
+  { code: 'ta', label: 'தமிழ்' },
+  { code: 'te', label: 'తెలుగు' },
 ];
 
-const Read = () => {
-  const [selectedLanguage, setSelectedLanguage] = useState(languages[0]); // Default to English
-  const [showLanguageModal, setShowLanguageModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  // Sample text content that will be "translated"
-  const originalContent = "This is the content that will be displayed in the selected language.";
+const ARTICLES = [
+  {
+    id: 1,
+    image: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6',
+    title: 'article1.title',
+    department: 'article1.department',
+    date: 'article1.date',
+    tags: ['article1.tag1', 'article1.tag2', 'article1.tag3'],
+    body: ['article1.body1', 'article1.body2'],
+    author: 'article1.author',
+    readTime: '5 min read',
+    likes: 42
+  },
+  {
+    id: 2,
+    image: 'https://images.unsplash.com/photo-1501004318641-b39e6451bec6',
+    title: 'article2.title',
+    department: 'article2.department',
+    date: 'article2.date',
+    tags: ['article2.tag1', 'article2.tag2'],
+    body: ['article2.body1', 'article2.body2', 'article2.body3'],
+    author: 'article2.author',
+    readTime: '7 min read',
+    likes: 18
+  }
+];
 
-  const filteredLanguages = languages.filter((language) =>
-    language.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  
-  
+const ArticlePage = () => {
+  const { t } = useTranslation();
+  const navigation = useNavigation();
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [currentArticleIndex, setCurrentArticleIndex] = useState(0);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(ARTICLES[0].likes);
+  const [likeAnimation] = useState(new Animated.Value(1));
+  const pan = useRef(new Animated.ValueXY()).current;
+  const { height, width } = Dimensions.get('window');
+  const swipeThreshold = width * 0.3;
 
-  const handleLanguageSelect = (language) => {
-    setSelectedLanguage(language);
-    setShowLanguageModal(false);
+  useEffect(() => {
+    setLikeCount(ARTICLES[currentArticleIndex].likes);
+    setLiked(false);
+  }, [currentArticleIndex]);
+
+  const animateLike = () => {
+    Animated.sequence([
+      Animated.timing(likeAnimation, {
+        toValue: 1.5,
+        duration: 150,
+        easing: Easing.ease,
+        useNativeDriver: true
+      }),
+      Animated.timing(likeAnimation, {
+        toValue: 1,
+        duration: 150,
+        easing: Easing.ease,
+        useNativeDriver: true
+      })
+    ]).start();
   };
 
-  // This function simulates translation - in a real app, you'd use a translation API
-  const getTranslatedContent = () => {
-    // In a real app, you would integrate with a translation service here
-    switch(selectedLanguage.id) {
-      case 'en':
-        return originalContent;
-      case 'hi':
-        return "यह वह सामग्री है जो चयनित भाषा में प्रदर्शित की जाएगी।";
-      case 'fr':
-        return "Ceci est le contenu qui sera affiché dans la langue sélectionnée.";
-      case 'de':
-        return "Dies ist der Inhalt, der in der ausgewählten Sprache angezeigt wird.";
-      case 'mr':
-        return "ही ती सामग्री आहे जी निवडलेल्या भाषेत प्रदर्शित केली जाईल.";
-      case 'ru':
-        return "Это контент, который будет отображаться на выбранном языке.";
-      default:
-        return originalContent;
+  const handleLike = () => {
+    const newLiked = !liked;
+    setLiked(newLiked);
+    setLikeCount(prev => newLiked ? prev + 1 : prev - 1);
+    animateLike();
+  };
+
+  const changeLanguage = (code: string) => {
+    i18n.changeLanguage(code);
+    setMenuVisible(false);
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: (_, gestureState) => {
+        if (gestureState.dy > 0) {
+          pan.setValue({ x: 0, y: gestureState.dy });
+        }
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dy > swipeThreshold && ARTICLES.length > 1) {
+          loadNextArticle();
+        } else {
+          Animated.spring(pan, {
+            toValue: { x: 0, y: 0 },
+            friction: 5,
+            useNativeDriver: true
+          }).start();
+        }
+      }
+    })
+  ).current;
+
+  const loadNextArticle = () => {
+    Animated.timing(pan, {
+      toValue: { x: 0, y: height },
+      duration: 300,
+      easing: Easing.out(Easing.exp),
+      useNativeDriver: true
+    }).start(() => {
+      pan.setValue({ x: 0, y: 0 });
+      setCurrentArticleIndex(prev => (prev + 1) % ARTICLES.length);
+      setBookmarked(false);
+    });
+  };
+
+  const toggleBookmark = () => {
+    setBookmarked(!bookmarked);
+    Alert.alert(
+      bookmarked ? t('removedBookmark') : t('addedBookmark'),
+      bookmarked ? t('articleRemoved') : t('articleSaved')
+    );
+  };
+
+  const shareArticle = async () => {
+    try {
+      const article = ARTICLES[currentArticleIndex];
+      await Share.share({
+        title: t(article.title),
+        message: `${t(article.title)}\n\n${t(article.body[0])?.substring(0, 100)}...\n\n${t('shareMore')}`,
+      });
+    } catch (error) {
+      console.error('Error sharing:', error);
     }
   };
 
+  const currentArticle = ARTICLES[currentArticleIndex];
+
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton}>
-          <Feather name="arrow-left" size={24} color="black" />
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="chevron-back" size={24} color="#000" />
+          <Text style={styles.headerTitle}>{t('Read Page')}</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Read</Text>
-        <TouchableOpacity>
-          <Feather name="more-vertical" size={24} color="black" />
+        
+        <TouchableOpacity onPress={() => setMenuVisible(true)}>
+          <Icon name="more-vertical" size={24} color="#000" />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.contentContainer}>
-        <Text style={styles.content}>
-          {getTranslatedContent()}
-        </Text>
-      </View>
-      
-      <TouchableOpacity 
-        style={styles.languageSelector} 
-        onPress={() => setShowLanguageModal(true)}
+      <Animated.View
+        style={[
+          styles.articleContainer,
+          { transform: [{ translateY: pan.y }] }
+        ]}
+        {...panResponder.panHandlers}
       >
-        <Text style={styles.languageSelectorText}>
-          {selectedLanguage ? selectedLanguage.name : 'Select language'}
-        </Text>
-        <Feather name="chevron-down" size={20} color="#666" />
-      </TouchableOpacity>
+        <ScrollView>
+          <Image
+            source={{ uri: currentArticle.image }}
+            style={styles.image}
+            resizeMode="cover"
+          />
 
-      <Modal
-        visible={showLanguageModal}
-        transparent={true}
-        animationType="fade"
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>language</Text>
+          <View style={styles.content}>
+            <Text style={styles.title}>{t(currentArticle.title)}</Text>
             
-            <View style={styles.searchContainer}>
-              <Feather name="search" size={18} color="#666" style={styles.searchIcon} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Language..."
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-              <Feather name="settings" size={18} color="#666" />
+            <View style={styles.metaContainer}>
+              <Text style={styles.department}>{t(currentArticle.department)}</Text>
+              <View style={styles.metaDivider} />
+              <Text style={styles.date}>{t(currentArticle.date)} • {t(currentArticle.readTime)}</Text>
             </View>
-            
-            <ScrollView style={styles.languageList}>
-              {filteredLanguages.map((language) => (
-                <TouchableOpacity
-                  key={language.id}
-                  style={styles.languageItem}
-                  onPress={() => handleLanguageSelect(language)}
-                >
-                  <View style={styles.radioContainer}>
-                    <View style={[
-                      styles.radioOuter,
-                      selectedLanguage?.id === language.id && styles.radioOuterSelected
-                    ]}>
-                      {selectedLanguage?.id === language.id && (
-                        <View style={styles.radioInner} />
-                      )}
-                    </View>
-                  </View>
-                  <Text style={styles.languageText}>{language.name}</Text>
-                </TouchableOpacity>
+
+            <Text style={styles.author}>{t('by')} {t(currentArticle.author)}</Text>
+
+            <View style={styles.tags}>
+              {currentArticle.tags.map((tag, index) => (
+                <Text key={index} style={styles.tag}>{t(tag)}</Text>
               ))}
-            </ScrollView>
-            
-            <View style={styles.modalFooter}>
-              <TouchableOpacity 
-                style={styles.okButton}
-                onPress={() => setShowLanguageModal(false)}
-              >
-                <Text style={styles.okButtonText}>OK</Text>
-              </TouchableOpacity>
             </View>
+
+            {currentArticle.body.map((paragraph, index) => (
+              <Text key={index} style={styles.body}>{t(paragraph)}</Text>
+            ))}
           </View>
-        </View>
+
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
+            <TouchableOpacity 
+              style={styles.actionButton} 
+              onPress={handleLike}
+            >
+              <Animated.View style={{ transform: [{ scale: likeAnimation }] }}>
+                <Icon 
+                  name={liked ? "heart" : "heart"} 
+                  size={24} 
+                  color={liked ? "#FF4081" : "#777"} 
+                />
+              </Animated.View>
+              <Text style={[styles.actionText, liked && styles.likedText]}>
+                {likeCount}
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.actionButton} onPress={toggleBookmark}>
+              <Icon 
+                name={bookmarked ? "bookmark" : "bookmark"} 
+                size={24} 
+                color={bookmarked ? "#4CAF50" : "#777"} 
+              />
+              <Text style={styles.actionText}>
+                {bookmarked ? t('bookmarked') : t('bookmark')}
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.actionButton} onPress={shareArticle}>
+              <Icon name="share-2" size={24} color="#777" />
+              <Text style={styles.actionText}>{t('share')}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {ARTICLES.length > 1 && (
+            <View style={styles.swipeIndicator}>
+              <Icon name="chevrons-down" size={24} color="#4CAF50" />
+              <Text style={styles.swipeText}>{t('swipeForMore')}</Text>
+            </View>
+          )}
+        </ScrollView>
+      </Animated.View>
+
+      {/* Language Modal */}
+      <Modal visible={menuVisible} transparent animationType="fade">
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1}
+          onPress={() => setMenuVisible(false)}
+        >
+          <View style={styles.modalContent}>
+            {LANGUAGES.map((lang) => (
+              <TouchableOpacity 
+                key={lang.code} 
+                style={styles.modalItem}
+                onPress={() => changeLanguage(lang.code)}
+              >
+                <Text style={styles.modalItemText}>{lang.label}</Text>
+                {i18n.language === lang.code && (
+                  <Icon name="check" size={20} color="#4CAF50" />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -152,124 +294,141 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: Platform.OS === 'ios' ? 50 : 20,
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingBottom: 12,
+    backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
   backButton: {
-    padding: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
+    marginLeft: 8,
+    color: '#000',
   },
-  contentContainer: {
+  articleContainer: {
     flex: 1,
-    padding: 16,
+  },
+  image: {
+    width: '100%',
+    height: 250,
   },
   content: {
+    padding: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 8,
+    color: '#222',
+    lineHeight: 30,
+  },
+  metaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  department: {
+    color: '#4CAF50',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  metaDivider: {
+    width: 1,
+    height: 12,
+    backgroundColor: '#ccc',
+    marginHorizontal: 8,
+  },
+  date: {
+    color: '#777',
+    fontSize: 14,
+  },
+  author: {
+    color: '#777',
+    fontSize: 14,
+    marginBottom: 16,
+  },
+  tags: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 20,
+    gap: 8,
+  },
+  tag: {
+    backgroundColor: '#E0F2E9',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    fontSize: 12,
+    color: '#2e7d32',
+  },
+  body: {
+    marginBottom: 20,
+    color: '#444',
     fontSize: 16,
     lineHeight: 24,
   },
-  languageSelector: {
+  actionButtons: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
+    justifyContent: 'space-around',
+    paddingVertical: 16,
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+    marginHorizontal: 20,
   },
-  languageSelectorText: {
-    fontSize: 16,
+  actionButton: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionText: {
+    color: '#555',
+    fontSize: 14,
+  },
+  likedText: {
+    color: '#FF4081',
+    fontWeight: 'bold',
+  },
+  swipeIndicator: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    marginBottom: 30,
+  },
+  swipeText: {
+    color: '#4CAF50',
+    marginTop: 5,
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
   modalContent: {
-    width: '80%',
-    maxHeight: '70%',
     backgroundColor: '#fff',
-    borderRadius: 8,
-    overflow: 'hidden',
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 20,
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '300',
-    color: '#999',
-    padding: 16,
-  },
-  searchContainer: {
+  modalItem: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 4,
-    margin: 16,
-    paddingHorizontal: 8,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
-  searchIcon: {
-    marginRight: 8,
-  },
-  searchInput: {
-    flex: 1,
-    padding: 8,
+  modalItemText: {
     fontSize: 16,
-  },
-  languageList: {
-    maxHeight: 300,
-  },
-  languageItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  radioContainer: {
-    marginRight: 12,
-  },
-  radioOuter: {
-    height: 20,
-    width: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioOuterSelected: {
-    borderColor: '#2089dc',
-  },
-  radioInner: {
-    height: 10,
-    width: 10,
-    borderRadius: 5,
-    backgroundColor: '#2089dc',
-  },
-  languageText: {
-    fontSize: 16,
-  },
-  modalFooter: {
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    padding: 8,
-    alignItems: 'flex-end',
-  },
-  okButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 4,
-    backgroundColor: '#2089dc',
-  },
-  okButtonText: {
-    color: '#fff',
-    fontWeight: '500',
+    color: '#333',
   },
 });
 
-export default Read;
+export default ArticlePage;

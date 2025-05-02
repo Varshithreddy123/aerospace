@@ -23,12 +23,12 @@ export default function TabLayout() {
       name: "BES",
       iconType: "image",
       imagePath: require('@/assets/images/logo.png'),
-      route: "/BES",
+      route: "screens/BES",
       iconStyle: { backgroundColor: 'black', borderRadius: 100, padding: 5 }
     },
     { name: "Help", icon: "support-agent", route: "/support" },
-    { name: "Coupons", icon: "local-offer", route: "/coupons" },
-    { name: "Buy a Drone", icon: "shopping-cart", route: "/Shopping" },
+    { name: "Coupons", icon: "local-offer", route: "screens/coupons" },
+    { name: "Buy a Drone", icon: "shopping-cart", route: "screens/BuyaDrone" },
   ];
 
   return (

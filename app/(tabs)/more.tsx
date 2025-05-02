@@ -32,7 +32,7 @@ const BottomDrawer = ({ navigation, visible, onClose }) => {
       name: "BES",
       iconType: "image",
       imagePath: require('@/assets/images/logo.png'),
-      route: "/BES",
+      route: "/screens/BES",
       iconStyle: { backgroundColor: 'black', borderRadius: 100, padding: 5 }
     },
     { name: 'Buy a Drone', icon: 'flight', route: 'BuyADrone' },
