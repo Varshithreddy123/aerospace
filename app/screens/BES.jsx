@@ -1,90 +1,79 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
-import { Stack } from 'expo-router';
+import React, { useLayoutEffect } from 'react';
+import { SafeAreaView, View, ScrollView, Text, StyleSheet, Image, Pressable } from 'react-native';
+import { useNavigation } from 'expo-router';
+import { Feather } from '@expo/vector-icons'; // Make sure to install @expo/vector-icons
 
 export default function BESScreen() {
+  const navigation = useNavigation();
+
+  // Custom header with back arrow
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: 'BES',
+      headerLeft: () => (
+        <Pressable onPress={() => navigation.goBack()} style={{ paddingHorizontal: 16 }}>
+          <Feather name="arrow-left" size={24} color="black" />
+        </Pressable>
+      ),
+    });
+  }, [navigation]);
+
   return (
-    <View style={styles.container}>
-      <StatusBar style="dark" />
-      <Stack.Screen
-        options={{
-          title: 'BES',
-          headerBackTitle: 'Back',
-          // These options ensure the back arrow appears and looks good
-          headerBackVisible: true,
-          headerBackTitleVisible: true,
-          headerShadowVisible: false, // if you want a clean header
-          headerTitleAlign: 'center', // centers the title
-        }}
-      />
-      
-      {/* Main content */}
-      <View style={styles.content}>
-        {/* Logo with blue background */}
-        <View style={styles.logoContainer}>
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.header}>
           <Image
-            source={require('@/assets/images/logo.png')}
-            style={styles.logo}
+            source={{
+              uri: 'https://storage.googleapis.com/tagjs-prod.appspot.com/v1/fJWEVg4enh/4fx7e8mh_expires_30_days.png',
+            }}
             resizeMode="contain"
+            style={{ width: 110, height: 121 }}
           />
         </View>
-        
-        {/* Text content */}
-        <Text style={styles.title}>
-          We are coming soon.
+
+        <View style={styles.messageContainer}>
+          <Text style={styles.comingSoon}>We are coming soon.</Text>
+        </View>
+
+        <Text style={styles.footerText}>
+          We are coming with BES app soon.{"\n"}Stay tuned.
         </Text>
-        
-        <Text style={styles.subtitle}>
-          We are coming with BES app soon.
-        </Text>
-        
-        <Text style={styles.text}>
-          Stay tuned
-        </Text>
-      </View>
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
+    backgroundColor: '#FFFFFF',
   },
   content: {
+    flexGrow: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+  },
+  header: {
     width: '100%',
-    maxWidth: 400,
+    alignItems: 'center',
+    paddingTop: 54,
+    paddingBottom: 18,
   },
-  logoContainer: {
-    backgroundColor: '#1d4ed8', // blue-700
-    borderRadius: 999,
-    padding: 24,
-    marginBottom: 48,
+  messageContainer: {
+    alignItems: 'center',
+    marginBottom: 10,
   },
-  logo: {
-    width: 64,
-    height: 64,
-  },
-  title: {
+  comingSoon: {
+    color: '#000000',
     fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 8,
   },
-  subtitle: {
+  footerText: {
+    color: '#847D7D',
     fontSize: 14,
-    color: '#666',
+    fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: 4,
-  },
-  text: {
-    fontSize: 14,
-    color: '#888',
-    textAlign: 'center',
+    marginBottom: 349,
+    marginHorizontal: 75,
   },
 });

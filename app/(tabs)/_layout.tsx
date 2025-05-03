@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import React, { useState } from "react";
-import { Platform, TouchableOpacity } from "react-native";
+import { Platform, TouchableOpacity, View, StyleSheet } from "react-native";
 import { HapticTab } from "@/components/HapticTab";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
@@ -26,7 +26,6 @@ export default function TabLayout() {
       route: "screens/BES",
       iconStyle: { backgroundColor: 'black', borderRadius: 100, padding: 5 }
     },
-    { name: "Help", icon: "support-agent", route: "/support" },
     { name: "Coupons", icon: "local-offer", route: "screens/coupons" },
     { name: "Buy a Drone", icon: "shopping-cart", route: "screens/BuyaDrone" },
   ];
@@ -48,9 +47,13 @@ export default function TabLayout() {
             ios: {
               position: "absolute",
               height: 60,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
             },
             default: {
               height: 60,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
             },
           }),
         }}
@@ -110,7 +113,24 @@ export default function TabLayout() {
         visible={drawerVisible}
         onClose={toggleDrawer}
         options={drawerOptions}
+        style={styles.drawer} // Apply custom drawer style
       />
     </>
   );
 }
+
+// Styles for Drawer
+const styles = StyleSheet.create({
+  drawer: {
+    width: '80%', // Adjust width to fit content
+    height: '70%', // Adjust height for content
+    marginBottom: 20, // Optional: Add space below the drawer
+    position: 'absolute', // Fixed position
+    bottom: 0, // Keep the drawer at the bottom
+    left: '10%', // Center the drawer horizontally
+    backgroundColor: 'white', // Optional: background color
+    borderTopLeftRadius: 20, // Optional: rounded corners
+    borderTopRightRadius: 20, // Optional: rounded corners
+    padding: 10, // Padding for content
+  },
+});
