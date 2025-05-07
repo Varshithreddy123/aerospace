@@ -13,7 +13,6 @@ import { MaterialIcons, Feather } from "@expo/vector-icons";
 import { useLocation } from "@/hooks/useLocation";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-// import i18n from "@/i18n/i18n";
 
 // Type definitions
 interface Coords {
@@ -454,6 +453,41 @@ export default function HomePage(): JSX.Element {
               </View>
             )}
           </View>
+        </View>
+
+        {/* Read Section */}
+        <View style={tw`p-4`}>
+          <Text style={[tw`text-lg mb-3`, { fontFamily: "Inter_700Bold" }]}>
+            {t("read_more")}
+          </Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <TouchableOpacity
+              style={tw`mr-3`}
+              onPress={() => router.push("/(tabs)/read")}
+            >
+              <Image
+                source={{ uri: "https://picsum.photos/256/160?random=2" }}
+                style={tw`w-64 h-40 rounded-lg`}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={tw`mr-3`}
+              onPress={() => router.push("/(tabs)/read")}
+            >
+              <Image
+                source={{ uri: "https://picsum.photos/256/160?random=2" }}
+                style={tw`w-64 h-40 rounded-lg`}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => router.push("/(tabs)/read")}
+            >
+              <Image
+                source={{ uri: "https://picsum.photos/256/160?random=2" }}
+                style={tw`w-64 h-40 rounded-lg`}
+              />
+            </TouchableOpacity>
+          </ScrollView>
         </View>
       </View>
     </SafeAreaView>
